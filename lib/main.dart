@@ -5,6 +5,9 @@ import 'package:readflow/data/models/reading_log.dart';
 import 'package:readflow/data/models/reminder_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/features/home/home.dart';
+import 'package:readflow/services/notification_services.dart';
+
+final notificationServices = NotificationServices();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +22,7 @@ void main() async{
   await Hive.openBox<Book>('books');
   await Hive.openBox<ReadingLog>('reading_log');
   await Hive.openBox<ReminderSettings>('reminder_settings');
+  await notificationServices.init();
   runApp(const ProviderScope(child: MyApp()));
 }
 

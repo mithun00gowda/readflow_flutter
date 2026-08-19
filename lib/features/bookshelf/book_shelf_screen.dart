@@ -14,36 +14,36 @@ class _BookShelfScreenState extends ConsumerState<BookShelfScreen> {
   @override
   Widget build(BuildContext context) {
     final books = ref.watch(bookProviders);
-    final wanttoreadbooks = books.where((b) => b.status == BookStatus.wantToRead).toList();
-    final readingbooks = books.where((b) => b.status == BookStatus.reading).toList();
-    final finishedbooks = books.where((b) => b.status == BookStatus.finished).toList();
-
+    final wantToReadBooks = books.where((b) => b.status == BookStatus.wantToRead).toList();
+    final readingBooks = books.where((b) => b.status == BookStatus.reading).toList();
+    final finishedBooks = books.where((b) => b.status == BookStatus.finished).toList();
+    final List<String> status = ['WantToRead','Reading','Finished'];
     return DefaultTabController(
       initialIndex: 0,
       length: BookStatus.values.length,
       child: Scaffold(
         appBar: AppBar(title: Text('Book Shelf'),
           bottom: TabBar(tabs: <Widget>[
-            ...List.generate(BookStatus.values.length, (i) => Tab(text: BookStatus.values[i].toString(),))
+            ...List.generate(status.length, (i) => Tab(text: status[i].toString(),))
           ]),
         ),
         body: Padding(padding: EdgeInsets.all(16),child: TabBarView(children: <Widget>[
           ListView.builder(
-              itemCount: wanttoreadbooks.length,
+              itemCount: wantToReadBooks.length,
               itemBuilder:(BuildContext context, index){
-                final book = wanttoreadbooks[index];
+                final book = wantToReadBooks[index];
                 return ListTile(title: Text(book.title),);
               }),
           ListView.builder(
-              itemCount: readingbooks.length,
+              itemCount: readingBooks.length,
               itemBuilder:(BuildContext context, index){
-                final book = readingbooks[index];
+                final book = readingBooks[index];
                 return ListTile(title: Text(book.title),);
               }),
           ListView.builder(
-              itemCount: finishedbooks.length,
+              itemCount: finishedBooks.length,
               itemBuilder:(BuildContext context, index){
-                final book = finishedbooks[index];
+                final book = finishedBooks[index];
                 return ListTile(title: Text(book.title),);
               })
         ])),

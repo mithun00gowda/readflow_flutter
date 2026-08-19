@@ -39,6 +39,8 @@ dependencies:
   hive:
   hive_flutter:
   uuid:
+  flutter_local_notifications:
+  timezone:
 
 
 dev_dependencies:
