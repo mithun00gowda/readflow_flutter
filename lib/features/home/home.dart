@@ -10,13 +10,27 @@ import 'package:uuid/uuid.dart';
 
 
 final _uuid = Uuid();
-class Home extends ConsumerWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<Home> createState() => _HomeState();
+}
+
+class _HomeState extends ConsumerState<Home> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      final books = ref.read(bookProviders);
+      ref.read(stalBookCheckerProviders).checkAndNotify(books);
+    })
+  }
+  @override
+  Widget build(BuildContext context) {
     final books = ref.watch(bookProviders);
-    return Scaffold(
+    return  Scaffold(
       appBar: AppBar(
         title: const Text('ReadFlow'),
         leading: IconButton(
@@ -59,28 +73,29 @@ class Home extends ConsumerWidget {
       body: books.isEmpty
           ? const Center(child: Text('No books yet - tap + to add one'))
           : ListView.builder(
-              itemCount: books.length,
-              itemBuilder: (context, index) {
-                final book = books[index];
-                return ListTile(
-                  title: Text(book.title),
-                  subtitle: Text(
-                    '${book.author} * ${(book.progress * 100).toStringAsFixed(0)}%',
-                  ),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => BookDetailsScreen(bookId: book.bookId),
-                    ),
-                  ),
-                );
-              },
+        itemCount: books.length,
+        itemBuilder: (context, index) {
+          final book = books[index];
+          return ListTile(
+            title: Text(book.title),
+            subtitle: Text(
+              '${book.author} * ${(book.progress * 100).toStringAsFixed(0)}%',
             ),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => BookDetailsScreen(bookId: book.bookId),
+              ),
+            ),
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => AddBookScreen())),
         child: Icon(Icons.add),
       ),
-    );
+    );;
   }
 }
+
