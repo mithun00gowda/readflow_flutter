@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+  import 'package:hive/hive.dart';
 
 part 'reminder_settings.g.dart';
 @HiveType(typeId: 3)

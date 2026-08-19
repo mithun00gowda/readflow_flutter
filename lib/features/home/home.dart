@@ -3,8 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/features/add_book/add_book_screen.dart';
 import 'package:readflow/features/book_detailes/book_details_screen.dart';
 import 'package:readflow/features/bookshelf/book_shelf_screen.dart';
+import 'package:readflow/features/settings/settings_screen.dart';
 import 'package:readflow/providers/book_providers.dart';
+import 'package:readflow/providers/services_provider.dart';
+import 'package:uuid/uuid.dart';
 
+
+final _uuid = Uuid();
 class Home extends ConsumerWidget {
   const Home({super.key});
 
@@ -14,6 +19,25 @@ class Home extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ReadFlow'),
+        leading: IconButton(
+          onPressed: () async {
+            // await ref.read(notificationServicesProviders).showImmediateNotification(
+            //   id: 0,
+            //   title: 'ReadTrack',
+            //   body: 'Reminder test',
+            // );
+            final testTime = DateTime.now().add(const Duration(minutes: 1));
+            await ref.read(notificationServicesProviders).scheduleDailyReminder(
+              id: 0,
+              hour: testTime.hour,
+              minute: testTime.minute,
+              title: 'Test',
+              body: 'ReadTrack reminder test',
+            );
+            debugPrint('${TimeOfDay.now().hour},${TimeOfDay.now().minute + 1}' );
+          },
+          icon: Icon(Icons.alarm),
+        ),
         actions: [
           IconButton(
             onPressed: () => Navigator.push(
@@ -22,6 +46,14 @@ class Home extends ConsumerWidget {
             ),
             icon: Icon(Icons.keyboard_arrow_right_outlined),
           ),
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => SettingsScreen()),
+            ),
+            icon: Icon(Icons.settings),
+          ),
+
         ],
       ),
       body: books.isEmpty

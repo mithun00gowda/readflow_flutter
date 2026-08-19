@@ -41,6 +41,7 @@ dependencies:
   uuid:
   flutter_local_notifications:
   timezone:
+  flutter_timezone:
 
 
 dev_dependencies:
