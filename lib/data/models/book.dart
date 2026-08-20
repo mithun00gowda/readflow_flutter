@@ -21,7 +21,7 @@ class Book extends HiveObject {
   @HiveField(2)
   final String author;
   @HiveField(3)
-  final String? coverUrl;
+  final String? coverImagePath;
   @HiveField(4)
   final int totalPage;
   @HiveField(5)
@@ -39,7 +39,7 @@ class Book extends HiveObject {
     required this.bookId,
     required this.title,
     required this.author,
-    this.coverUrl,
+    this.coverImagePath,
     required this.totalPage,
     this.currentPage = 0,
     this.status = BookStatus.wantToRead,
@@ -60,7 +60,7 @@ class Book extends HiveObject {
       bookId: bookId,
       title: title,
       author: author,
-      coverUrl: coverUrl,
+        coverImagePath: coverImagePath,
       totalPage: totalPage,
       currentPage: currentPage ?? this.currentPage,
       status: status ?? this.status,

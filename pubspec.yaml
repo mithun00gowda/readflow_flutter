@@ -42,6 +42,9 @@ dependencies:
   flutter_local_notifications:
   timezone:
   flutter_timezone:
+  http:
+  image_picker:
+  path_provider:
 
 
 dev_dependencies:

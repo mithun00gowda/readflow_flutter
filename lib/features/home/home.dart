@@ -25,7 +25,7 @@ class _HomeState extends ConsumerState<Home> {
     WidgetsBinding.instance.addPostFrameCallback((_){
       final books = ref.read(bookProviders);
       ref.read(stalBookCheckerProviders).checkAndNotify(books);
-    })
+    });
   }
   @override
   Widget build(BuildContext context) {

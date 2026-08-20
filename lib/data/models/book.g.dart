@@ -20,7 +20,7 @@ class BookAdapter extends TypeAdapter<Book> {
       bookId: fields[0] as String,
       title: fields[1] as String,
       author: fields[2] as String,
-      coverUrl: fields[3] as String?,
+      coverImagePath: fields[3] as String?,
       totalPage: fields[4] as int,
       currentPage: fields[5] as int,
       status: fields[6] as BookStatus,
@@ -41,7 +41,7 @@ class BookAdapter extends TypeAdapter<Book> {
       ..writeByte(2)
       ..write(obj.author)
       ..writeByte(3)
-      ..write(obj.coverUrl)
+      ..write(obj.coverImagePath)
       ..writeByte(4)
       ..write(obj.totalPage)
       ..writeByte(5)
