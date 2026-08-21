@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/data/models/book.dart';
 import 'package:readflow/data/models/reading_log.dart';
 import 'package:readflow/data/models/reminder_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/features/home/home.dart';
+import 'package:readflow/features/root_nav.dart';
 import 'package:readflow/services/notification_services.dart';
 
 final notificationServices = NotificationServices();
@@ -33,8 +35,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      theme: AppTheme.light,
       home: Scaffold(
-        body: Home(),
+        body: RootNav(),
       ),
     );
   }

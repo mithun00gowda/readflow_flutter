@@ -64,13 +64,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                     controller: _titleController,
                     decoration: const InputDecoration(labelText: 'Title'),
                     validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Requied' : null,
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
                   ),
                   TextFormField(
                     controller: _authorController,
                     decoration: const InputDecoration(labelText: 'Author'),
                     validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Requied' : null,
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
                   ),
                   TextFormField(
                     controller: _pagesController,
