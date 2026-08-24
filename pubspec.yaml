@@ -45,6 +45,7 @@ dependencies:
   http:
   image_picker:
   path_provider:
+  table_calendar: 
 
 
 dev_dependencies:

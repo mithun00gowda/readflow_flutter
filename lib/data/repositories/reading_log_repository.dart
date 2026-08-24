@@ -3,6 +3,7 @@ import 'package:readflow/data/models/reading_log.dart';
 
 abstract class ReadingLogRepository {
   List<ReadingLog> getLogsForBook(String id);
+  List<ReadingLog> getAllLogs();
 
   Future<void> addLog(ReadingLog log);
 }
@@ -15,6 +16,9 @@ class HiveReadingLogRepository implements ReadingLogRepository {
   @override
   List<ReadingLog> getLogsForBook(String id) =>
       _box.values.where((b) => b.bookId == id).toList();
+
+  @override
+  List<ReadingLog> getAllLogs() => _box.values.toList();
 
   @override
   Future<void> addLog(ReadingLog log) => _box.add(log);
