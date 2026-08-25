@@ -45,7 +45,8 @@ dependencies:
   http:
   image_picker:
   path_provider:
-  table_calendar: 
+  table_calendar:
+  lottie:
 
 
 dev_dependencies:
@@ -73,8 +74,11 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+      - assets/animation_files/Fire.json
+      - assets/animation_files/emoji.json
+      - assets/animation_files/Emojis - Love.json
+      - assets/animation_files/Trophy.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -6,6 +6,7 @@ import 'package:readflow/features/bookshelf/book_shelf_screen.dart';
 import 'package:readflow/features/settings/settings_screen.dart';
 import 'package:readflow/providers/book_providers.dart';
 import 'package:readflow/providers/services_provider.dart';
+import 'package:readflow/providers/streak_provider.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -26,10 +27,17 @@ class _HomeState extends ConsumerState<Home> {
       final books = ref.read(bookProviders);
       ref.read(stalBookCheckerProviders).checkAndNotify(books);
     });
+    final readDates = ref.read(readDatesProvider);
+    final currentStreak = ref.read(currentStreakProvider);
+    final longestStreak = ref.read(longestStreakProvider);
+    debugPrint('readDates => $readDates');
+    debugPrint('currentStreak => $currentStreak');
+    debugPrint('longestStreak => $longestStreak');
   }
   @override
   Widget build(BuildContext context) {
     final books = ref.watch(bookProviders);
+
     return  Scaffold(
       appBar: AppBar(
         title: const Text('ReadFlow'),

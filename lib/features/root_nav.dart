@@ -4,6 +4,7 @@ import 'package:readflow/features/add_book/add_book_screen.dart';
 import 'package:readflow/features/bookshelf/book_shelf_screen.dart';
 import 'package:readflow/features/home/home.dart';
 import 'package:readflow/features/settings/settings_screen.dart';
+import 'package:readflow/features/stats/stats_screen.dart';
 
 class RootNav extends StatefulWidget {
   const RootNav({super.key});
@@ -15,7 +16,7 @@ class RootNav extends StatefulWidget {
 class _RootNavState extends State<RootNav> {
   int _currentindex = 0;
 
-  static const _screen = [Home(), BookShelfScreen(), SettingsScreen()];
+  static const _screen = [Home(), BookShelfScreen(),StatsScreen(), SettingsScreen()];
 
   void _onTabTapped(int index) => setState(() => _currentindex = index);
   @override
