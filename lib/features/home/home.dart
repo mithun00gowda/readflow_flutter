@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/features/book_detailes/book_details_screen.dart';
+import 'package:readflow/providers/achievements_provider.dart';
 import 'package:readflow/providers/book_providers.dart';
 import 'package:readflow/providers/services_provider.dart';
 import 'package:readflow/providers/streak_provider.dart';
+
+import 'widgets/achievements_chip.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({super.key});
@@ -49,6 +52,7 @@ class _HomeState extends ConsumerState<Home> {
   Widget build(BuildContext context) {
     final books = ref.watch(bookProviders);
     final currentStreak = ref.watch(currentStreakProvider);
+    final achievements = ref.watch(readingAchievementsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -58,6 +62,7 @@ class _HomeState extends ConsumerState<Home> {
             : CustomScrollView(
           slivers: [
             SliverToBoxAdapter(child: _buildHeader(currentStreak)),
+            SliverToBoxAdapter(child: _buildAchievements(achievements),),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               sliver: SliverList.separated(
@@ -212,6 +217,34 @@ class _HomeState extends ConsumerState<Home> {
       ),
     );
   }
+  Widget _buildAchievements(ReadingAchievements achievements) {
+    final hours = achievements.totalMinutesRead ~/ 60;
+    final minutes = achievements.totalMinutesRead % 60;
+    final timeLabel = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: AchievementChip(
+              icon: Icons.auto_stories,
+              value: '${achievements.totalPagesRead}',
+              label: 'pages read',
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: AchievementChip(
+              icon: Icons.schedule,
+              value: timeLabel,
+              label: 'time reading',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BookCard extends StatelessWidget {
@@ -331,4 +364,7 @@ class _BookCard extends StatelessWidget {
       ),
     );
   }
+  // add to Home, as a new private method, called between header and the book list
+
 }
+

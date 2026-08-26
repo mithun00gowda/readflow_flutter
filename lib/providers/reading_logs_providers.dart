@@ -9,7 +9,7 @@ class ReadingLogsNotifier extends Notifier<List<ReadingLog>> {
   @override
   List<ReadingLog> build() => [];
 
-  void logProgress(String bookId, int fromPage, int toPage) {
+  void logProgress(String bookId, int fromPage, int toPage,{int? sessionDurationMinutes}) {
     final id = _uuid.v4();
     final log = ReadingLog(
       id: id,
@@ -17,6 +17,7 @@ class ReadingLogsNotifier extends Notifier<List<ReadingLog>> {
       fromPage: fromPage,
       toPage: toPage,
       timeStamp: DateTime.now(),
+      sessionDurationMinutes: sessionDurationMinutes,
     );
 
     ref.read(readingLogsRepositoryProvider).addLog(log);

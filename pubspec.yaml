@@ -80,6 +80,7 @@ flutter:
       - assets/animation_files/emoji.json
       - assets/animation_files/Emojis - Love.json
       - assets/animation_files/Trophy.json
+      - assets/animation_files/Target Animation.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

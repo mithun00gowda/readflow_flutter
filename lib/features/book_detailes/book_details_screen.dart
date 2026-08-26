@@ -21,7 +21,13 @@ class BookDetailsScreen extends ConsumerStatefulWidget {
 
 class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
   double? _sliderValue; // null until first synced from book data
-
+  late final DateTime _sessionStart;
+@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _sessionStart = DateTime.now();
+  }
   @override
   Widget build(BuildContext context) {
     final books = ref.watch(bookProviders);
@@ -71,10 +77,11 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                     : () {
                   final fromPage = book.currentPage;
                   final toPage = _sliderValue!.round();
+                  final elapsedMinutes = DateTime.now().difference(_sessionStart).inMinutes;
                   ref.read(bookProviders.notifier).updateBook(book.bookId, toPage);
                   ref
                       .read(readingLogsProvider.notifier)
-                      .logProgress(book.bookId, fromPage, toPage);
+                      .logProgress(book.bookId, fromPage, toPage,sessionDurationMinutes: elapsedMinutes);
                 },
                 child: const Text('Update Progress'),
               ),
