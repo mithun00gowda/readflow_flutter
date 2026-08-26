@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/data/models/book.dart';
+import 'package:readflow/data/models/book_reminder.dart';
 import 'package:readflow/data/models/reading_log.dart';
 import 'package:readflow/data/models/reminder_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,10 +21,12 @@ void main() async{
   Hive.registerAdapter(BookAdapter());
   Hive.registerAdapter(ReadingLogAdapter());
   Hive.registerAdapter(ReminderSettingsAdapter());
+  Hive.registerAdapter(BookReminderAdapter());
 
   await Hive.openBox<Book>('books');
   await Hive.openBox<ReadingLog>('reading_log');
   await Hive.openBox<ReminderSettings>('reminder_settings');
+  await Hive.openBox<BookReminder>('book_reminder');
   await notificationServices.init();
   runApp(const ProviderScope(child: MyApp()));
 }

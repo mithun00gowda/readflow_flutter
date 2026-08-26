@@ -3,6 +3,7 @@ import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/features/add_book/add_book_screen.dart';
 import 'package:readflow/features/bookshelf/book_shelf_screen.dart';
 import 'package:readflow/features/home/home.dart';
+import 'package:readflow/features/settings/reminder_screen.dart';
 import 'package:readflow/features/settings/settings_screen.dart';
 import 'package:readflow/features/stats/stats_screen.dart';
 
@@ -16,7 +17,7 @@ class RootNav extends StatefulWidget {
 class _RootNavState extends State<RootNav> {
   int _currentindex = 0;
 
-  static const _screen = [Home(), BookShelfScreen(),StatsScreen(), SettingsScreen()];
+  static const _screen = [Home(), BookShelfScreen(),StatsScreen(), ReminderScreen()];
 
   void _onTabTapped(int index) => setState(() => _currentindex = index);
   @override
@@ -33,6 +34,7 @@ class _RootNavState extends State<RootNav> {
               context,
             ).push(MaterialPageRoute(builder: (_) => const AddBookScreen()));
           },
+          heroTag: 'root_nav_add_book_fab',
           shape: const CircleBorder(),
           backgroundColor: AppColors.primary,
           elevation: 4,
@@ -50,14 +52,14 @@ class _RootNavState extends State<RootNav> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _NavIcons(
-              icon: Icons.menu_book_outlined,
-              selectedIcon: Icons.menu_book,
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home,
               isSelected: _currentindex == 0,
               onTap: () => _onTabTapped(0),
             ),
             _NavIcons(
-              icon: Icons.home_outlined,
-              selectedIcon: Icons.home,
+              icon: Icons.menu_book_outlined,
+              selectedIcon: Icons.menu_book,
               isSelected: _currentindex == 1,
               onTap: () => _onTabTapped(1),
             ),

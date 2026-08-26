@@ -15,7 +15,7 @@ class BookReminder extends HiveObject {
   @HiveField(4)
   final bool enabled;
   @HiveField(5)
-  final int bookID;
+  final String? bookID;
   @HiveField(6)
   final List<int> daysOfWeek;
 
@@ -24,9 +24,9 @@ class BookReminder extends HiveObject {
     required this.label,
     required this.hour,
     required this.minute,
-    required this.enabled,
-    required this.bookID,
-    required this.daysOfWeek,
+     this.enabled = true,
+     this.bookID,
+     this.daysOfWeek =const [1,2,3,4,5,6,7],
   });
 
   BookReminder copyWith({
@@ -34,7 +34,7 @@ class BookReminder extends HiveObject {
     int? hour,
     int? minute,
     bool? enabled,
-    int? bookID,
+    String? bookID,
     List<int>? daysOfWeek,
   }) {
     return BookReminder(

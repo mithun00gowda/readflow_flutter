@@ -47,6 +47,7 @@ dependencies:
   path_provider:
   table_calendar:
   lottie:
+  sleek_circular_slider:
 
 
 dev_dependencies:

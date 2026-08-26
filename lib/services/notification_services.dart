@@ -158,4 +158,60 @@ class NotificationServices {
     }
     return scheduled;
   }
+
+  // lib/services/notification_services.dart — add this method
+  Future<void> scheduleBookReminder({
+    required int id,
+    required int hour,
+    required int minute,
+    required String title,
+    required String body,
+    String? imagePath,
+  }) async {
+    final scheduledTime = _nextInstanceOfTime(hour, minute);
+
+    AndroidNotificationDetails androidDetails;
+    List<DarwinNotificationAttachment>? iosAttachments;
+
+    if (imagePath != null) {
+      androidDetails = AndroidNotificationDetails(
+        'book_reminder',
+        'Book Reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        styleInformation: BigPictureStyleInformation(
+          FilePathAndroidBitmap(imagePath),
+          largeIcon: FilePathAndroidBitmap(imagePath),
+          contentTitle: title,
+          summaryText: body,
+        ),
+      );
+      iosAttachments = [DarwinNotificationAttachment(imagePath)];
+    } else {
+      androidDetails = const AndroidNotificationDetails(
+        'book_reminder',
+        'Book Reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+      );
+    }
+
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledTime,
+      notificationDetails: NotificationDetails(
+        android: androidDetails,
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          attachments: iosAttachments,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
 }

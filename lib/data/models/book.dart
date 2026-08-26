@@ -52,16 +52,20 @@ class Book extends HiveObject {
 
   Book copyWith({
     int? currentPage,
+    String? title,
+    String? author,
+    int? totalPage,
     BookStatus? status,
     DateTime? dateFinished,
     DateTime? lastReadAt,
+    String? coverImagePath,
   }) {
     return Book(
       bookId: bookId,
-      title: title,
-      author: author,
-        coverImagePath: coverImagePath,
-      totalPage: totalPage,
+      title: title ?? this.title,
+      author: author ?? this.author,
+        coverImagePath: coverImagePath ?? this.coverImagePath,
+      totalPage: totalPage ?? this.totalPage,
       currentPage: currentPage ?? this.currentPage,
       status: status ?? this.status,
       dateAdded: dateAdded,

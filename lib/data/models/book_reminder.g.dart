@@ -22,7 +22,7 @@ class BookReminderAdapter extends TypeAdapter<BookReminder> {
       hour: fields[2] as int,
       minute: fields[3] as int,
       enabled: fields[4] as bool,
-      bookID: fields[5] as int,
+      bookID: fields[5] as String?,
       daysOfWeek: (fields[6] as List).cast<int>(),
     );
   }

@@ -14,13 +14,74 @@ class BookNotifier extends Notifier<List<Book>>{
     state = ref.watch(bookRepositoryProviders).getAllBooks();
   }
 
-  void updateBook(String bookId, int newPage){
+  // inside BookNotifier
+  void updateBook(String bookId, int newPage) {
     final repo = ref.read(bookRepositoryProviders);
     final book = repo.getBookById(bookId);
-    if(book == null) return;
-    final updated = book.copyWith(currentPage: newPage,lastReadAt: DateTime.now());
+    if (book == null) return;
+
+    final clampedPage = newPage.clamp(0, book.totalPage);
+    final derivedStatus = _deriveStatus(clampedPage, book.totalPage);
+
+    final updated = book.copyWith(
+      currentPage: clampedPage,
+      status: derivedStatus,
+      lastReadAt: DateTime.now(),
+      dateFinished: derivedStatus == BookStatus.finished ? DateTime.now() : null,
+    );
+
     repo.updateBook(updated);
     state = repo.getAllBooks();
+  }
+
+  BookStatus _deriveStatus(int currentPage, int totalPages) {
+    if (currentPage <= 0) return BookStatus.wantToRead;
+    if (currentPage >= totalPages) return BookStatus.finished;
+    return BookStatus.reading;
+  }
+
+  void updateStatus(String bookId, BookStatus status) {
+    final repo = ref.read(bookRepositoryProviders);
+    final book = repo.getBookById(bookId);
+    if (book == null) return;
+
+    int newCurrentPage = book.currentPage;
+    if (status == BookStatus.finished) {
+      newCurrentPage = book.totalPage;
+    } else if (status == BookStatus.wantToRead) {
+      newCurrentPage = 0;
+    }
+
+    final updated = book.copyWith(
+      status: status,
+      currentPage: newCurrentPage,
+      dateFinished: status == BookStatus.finished ? DateTime.now() : null,
+    );
+    repo.updateBook(updated);
+    state = repo.getAllBooks();
+  }
+
+  void updateCover(String bookId, String coverImagePath) {
+    final repo = ref.read(bookRepositoryProviders);
+    final book = repo.getBookById(bookId);
+    if (book == null) return;
+    final updated = book.copyWith(coverImagePath: coverImagePath);
+    repo.updateBook(updated);
+    state = repo.getAllBooks();
+  }
+
+  void editDetails(String bookId, {required String title, required String author, required int totalPages}) {
+    final repo = ref.read(bookRepositoryProviders);
+    final book = repo.getBookById(bookId);
+    if (book == null) return;
+    final updated = book.copyWith(title: title, author: author, totalPage: totalPages);
+    repo.updateBook(updated);
+    state = repo.getAllBooks();
+  }
+
+  void deleteBook(String bookId) {
+    ref.read(bookRepositoryProviders).deleteBook(bookId);
+    state = ref.read(bookRepositoryProviders).getAllBooks();
   }
 }
 
