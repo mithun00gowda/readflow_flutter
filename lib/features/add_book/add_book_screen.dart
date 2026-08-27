@@ -92,9 +92,10 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                       label: 'Total Pages',
                       icon: Icons.description_outlined,
                       keyboardType: TextInputType.number,
+                      maxpage: 3,
                       validator: (v) {
                         final n = int.tryParse(v ?? '');
-                        if (n == null || n <= 0) return 'Enter a valid number';
+                        if (n == null || n <= 0 ) return 'Enter a valid number';
                         return null;
                       },
                     ),
@@ -146,11 +147,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     required IconData icon,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
+    int? maxpage,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
+      maxLength: maxpage,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),

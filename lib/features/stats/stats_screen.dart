@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/features/stats/widget/reading_heatmap_calendar.dart';
 import 'package:readflow/features/stats/widget/streak_header.dart';
+import 'package:readflow/providers/reading_logs_providers.dart';
 import 'package:readflow/providers/repository_providers.dart';
 import 'package:readflow/providers/streak_provider.dart';
 
@@ -19,7 +20,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   Widget build(BuildContext context) {
     final currentStreak = ref.watch(currentStreakProvider);
     final longestStreak = ref.watch(longestStreakProvider);
-    final allLogs = ref.watch(readingLogsRepositoryProvider).getAllLogs();
+    final allLogs = ref.watch(readingLogsProvider);
 
     final pagesPerDay = <DateTime, int>{};
     for (final log in allLogs) {

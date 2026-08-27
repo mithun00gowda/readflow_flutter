@@ -7,7 +7,9 @@ final _uuid = Uuid();
 
 class ReadingLogsNotifier extends Notifier<List<ReadingLog>> {
   @override
-  List<ReadingLog> build() => [];
+  List<ReadingLog> build() {
+    return ref.watch(readingLogsRepositoryProvider).getAllLogs();
+  }
 
   void logProgress(String bookId, int fromPage, int toPage,{int? sessionDurationMinutes}) {
     final id = _uuid.v4();

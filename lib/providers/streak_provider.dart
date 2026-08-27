@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readflow/providers/reading_logs_providers.dart';
 import 'package:readflow/providers/repository_providers.dart';
 import 'package:readflow/services/streak_service.dart';
 
 final streakProvider = Provider<StreakService>((ref) => StreakService());
 
 final readDatesProvider = Provider<Set<DateTime>>((ref){
-  final allLogs = ref.watch(readingLogsRepositoryProvider).getAllLogs();
+  final allLogs = ref.watch(readingLogsProvider);
   return ref.watch(streakProvider).getReadDates(allLogs);
 });
 
