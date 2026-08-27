@@ -1,15 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/data/models/book.dart';
+import 'package:readflow/providers/book_reminder_provider.dart';
 import 'package:readflow/providers/repository_providers.dart';
+import 'package:readflow/providers/services_provider.dart';
 
-class BookNotifier extends Notifier<List<Book>>{
-
+class BookNotifier extends Notifier<List<Book>> {
   @override
   List<Book> build() {
     return ref.watch(bookRepositoryProviders).getAllBooks();
   }
 
-  void addBook(Book book){
+  void addBook(Book book) {
     ref.read(bookRepositoryProviders).addBook(book);
     state = ref.watch(bookRepositoryProviders).getAllBooks();
   }
@@ -27,7 +28,9 @@ class BookNotifier extends Notifier<List<Book>>{
       currentPage: clampedPage,
       status: derivedStatus,
       lastReadAt: DateTime.now(),
-      dateFinished: derivedStatus == BookStatus.finished ? DateTime.now() : null,
+      dateFinished: derivedStatus == BookStatus.finished
+          ? DateTime.now()
+          : null,
     );
 
     repo.updateBook(updated);
@@ -70,21 +73,41 @@ class BookNotifier extends Notifier<List<Book>>{
     state = repo.getAllBooks();
   }
 
-  void editDetails(String bookId, {required String title, required String author, required int totalPages}) {
+  void editDetails(
+    String bookId, {
+    required String title,
+    required String author,
+    required int totalPages,
+  }) {
     final repo = ref.read(bookRepositoryProviders);
     final book = repo.getBookById(bookId);
     if (book == null) return;
-    final updated = book.copyWith(title: title, author: author, totalPage: totalPages);
+    final updated = book.copyWith(
+      title: title,
+      author: author,
+      totalPage: totalPages,
+    );
     repo.updateBook(updated);
     state = repo.getAllBooks();
   }
 
   void deleteBook(String bookId) {
+    final linkedReminder = ref
+        .read(bookReminderRepositoryProvider)
+        .getAll()
+        .where((r) => r.bookID == bookId)
+        .toList();
+
+    for(final reminder in linkedReminder){
+      ref.read(notificationServicesProviders).cancel(reminder.notificationId);
+      ref.read(bookReminderRepositoryProvider).delect(reminder.id);
+    }
     ref.read(bookRepositoryProviders).deleteBook(bookId);
     state = ref.read(bookRepositoryProviders).getAllBooks();
+    ref.invalidate(bookReminderProvider);
   }
 }
 
-final bookProviders = NotifierProvider<BookNotifier, List<Book>>((){
- return BookNotifier();
+final bookProviders = NotifierProvider<BookNotifier, List<Book>>(() {
+  return BookNotifier();
 });
