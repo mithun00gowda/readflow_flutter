@@ -24,12 +24,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
     final pagesPerDay = <DateTime, int>{};
     for (final log in allLogs) {
-      final day = DateTime(
-        log.timeStamp.year,
-        log.timeStamp.month,
-        log.timeStamp.day,
-      );
-      pagesPerDay[day] = (pagesPerDay[day] ?? 0) + log.pagesRead;
+      final day = DateTime(log.timeStamp.year, log.timeStamp.month, log.timeStamp.day);
+      final pages = log.pagesRead > 0 ? log.pagesRead : 0;
+      pagesPerDay[day] = (pagesPerDay[day] ?? 0) + pages;
     }
 
     return Scaffold(

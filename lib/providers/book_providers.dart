@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/data/models/book.dart';
 import 'package:readflow/providers/book_reminder_provider.dart';
 import 'package:readflow/providers/repository_providers.dart';
 import 'package:readflow/providers/services_provider.dart';
+
+import '../core/widgets/app_toast.dart';
 
 class BookNotifier extends Notifier<List<Book>> {
   @override
@@ -35,6 +38,7 @@ class BookNotifier extends Notifier<List<Book>> {
 
     repo.updateBook(updated);
     state = repo.getAllBooks();
+    debugPrint('📖 updateBook: ${updated.title} now at page ${updated.currentPage}, state has ${state.length} books');
   }
 
   BookStatus _deriveStatus(int currentPage, int totalPages) {
@@ -61,6 +65,7 @@ class BookNotifier extends Notifier<List<Book>> {
       dateFinished: status == BookStatus.finished ? DateTime.now() : null,
     );
     repo.updateBook(updated);
+    AppToast.show('Marked as ${status.name}');
     state = repo.getAllBooks();
   }
 

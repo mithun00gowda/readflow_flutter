@@ -6,6 +6,7 @@ import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/providers/book_providers.dart';
 import 'package:readflow/providers/book_reminder_provider.dart';
 
+import '../../core/widgets/app_toast.dart';
 import '../../data/models/book_reminder.dart';
 
 class ReminderScreen extends ConsumerWidget {
@@ -16,12 +17,13 @@ class ReminderScreen extends ConsumerWidget {
     final reminders = ref.watch(bookReminderProvider);
     final notifier = ref.read(bookReminderProvider.notifier);
     return Scaffold(
-      appBar: AppBar(title: Text('Reminders'),
-      actions: [
-        IconButton(
-          onPressed: () => _showReminderSheet(context,ref, notifier),
-    icon: Icon(Icons.add, color: AppColors.textSecondary),
-    ),
+      appBar: AppBar(
+        title: Text('Reminders'),
+        actions: [
+          IconButton(
+            onPressed: () => _showReminderSheet(context, ref, notifier),
+            icon: Icon(Icons.add, color: AppColors.textSecondary),
+          ),
         ],
       ),
       body: reminders.isEmpty
@@ -30,62 +32,86 @@ class ReminderScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               separatorBuilder: (_, __) => SizedBox(height: 10),
               itemCount: reminders.length,
-        itemBuilder: (context, i) {
-          final r = reminders[i];
-          final books = ref.watch(bookProviders);
-          final linkedBook = r.bookID != null
-              ? books.where((b) => b.bookId == r.bookID).firstOrNull
-              : null;
+              itemBuilder: (context, i) {
+                final r = reminders[i];
+                final books = ref.watch(bookProviders);
+                final linkedBook = r.bookID != null
+                    ? books.where((b) => b.bookId == r.bookID).firstOrNull
+                    : null;
 
-          return InkWell(
-            onTap: () => _showReminderSheet(context, ref, notifier, existing: r),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  _buildCoverThumbnail(linkedBook?.coverImagePath),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                return InkWell(
+                  onTap: () =>
+                      _showReminderSheet(context, ref, notifier, existing: r),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
                       children: [
-                        Text(r.label, style: const TextStyle(fontWeight: FontWeight.w600)),
-                        Text(
-                          '${r.hour.toString().padLeft(2, '0')}:${r.minute.toString().padLeft(2, '0')}',
-                          style: const TextStyle(color: AppColors.textSecondary),
+                        _buildCoverThumbnail(linkedBook?.coverImagePath),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                r.label,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '${r.hour.toString().padLeft(2, '0')}:${r.minute.toString().padLeft(2, '0')}',
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: r.enabled,
+                          onChanged: (_) {
+                            notifier.toggleEnable(r);
+                            AppToast.show(
+                              r.enabled
+                                  ? 'Reminder turned off'
+                                  : 'Reminder turned on',
+                              type: ToastType.info,
+                            );
+                          },
+                          activeThumbColor: AppColors.primary,
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            notifier.deleteRemindre(r);
+                            AppToast.show(
+                              'Reminder removed',
+                              type: ToastType.error,
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Switch(
-                    value: r.enabled,
-                    onChanged: (_) => notifier.toggleEnable(r),
-                    activeThumbColor: AppColors.primary,
-                  ),
-                  IconButton(
-                    onPressed: () => notifier.deleteRemindre(r),
-                    icon: const Icon(Icons.delete_outline, color: AppColors.textSecondary),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-            ),
-
     );
   }
 
   void _showReminderSheet(
-      BuildContext context,
-      WidgetRef ref,
-      BookReminderNotifier notifier, {
-        BookReminder? existing, // null = add mode, non-null = edit mode
-      }) {
+    BuildContext context,
+    WidgetRef ref,
+    BookReminderNotifier notifier, {
+    BookReminder? existing, // null = add mode, non-null = edit mode
+  }) {
     final labelController = TextEditingController(text: existing?.label ?? '');
     TimeOfDay pickedTime = existing != null
         ? TimeOfDay(hour: existing.hour, minute: existing.minute)
@@ -105,7 +131,9 @@ class ReminderScreen extends ConsumerWidget {
           builder: (context, setSheetState) {
             return Padding(
               padding: EdgeInsets.only(
-                left: 20, right: 20, top: 20,
+                left: 20,
+                right: 20,
+                top: 20,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               ),
               child: Column(
@@ -114,24 +142,41 @@ class ReminderScreen extends ConsumerWidget {
                 children: [
                   Text(
                     existing == null ? 'New Reminder' : 'Edit Reminder',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 16),
 
                   // Book picker
                   DropdownButtonFormField<String?>(
                     value: selectedBookId,
-                    decoration: const InputDecoration(labelText: 'Link to a book (optional)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Link to a book (optional)',
+                    ),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('No book — general reminder')),
-                      ...books.map((b) => DropdownMenuItem(value: b.bookId, child: Text(b.title))),
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('No book — general reminder'),
+                      ),
+                      ...books.map(
+                        (b) => DropdownMenuItem(
+                          value: b.bookId,
+                          child: Text(b.title),
+                        ),
+                      ),
                     ],
                     onChanged: (bookId) {
                       setSheetState(() {
                         selectedBookId = bookId;
-                        final book = books.where((b) => b.bookId == bookId).firstOrNull;
-                        if (book != null && labelController.text.trim().isEmpty) {
-                          labelController.text = book.title; // auto-fill, only if label is empty
+                        final book = books
+                            .where((b) => b.bookId == bookId)
+                            .firstOrNull;
+                        if (book != null &&
+                            labelController.text.trim().isEmpty) {
+                          labelController.text =
+                              book.title; // auto-fill, only if label is empty
                         }
                       });
                     },
@@ -149,8 +194,12 @@ class ReminderScreen extends ConsumerWidget {
                     title: const Text('Time'),
                     trailing: Text(pickedTime.format(context)),
                     onTap: () async {
-                      final result = await showTimePicker(context: context, initialTime: pickedTime);
-                      if (result != null) setSheetState(() => pickedTime = result);
+                      final result = await showTimePicker(
+                        context: context,
+                        initialTime: pickedTime,
+                      );
+                      if (result != null)
+                        setSheetState(() => pickedTime = result);
                     },
                   ),
                   const SizedBox(height: 16),
@@ -177,9 +226,12 @@ class ReminderScreen extends ConsumerWidget {
                             bookId: selectedBookId,
                           );
                         }
+                        AppToast.show('Reminder saved');
                         Navigator.pop(context);
                       },
-                      child: Text(existing == null ? 'Add Reminder' : 'Save Changes'),
+                      child: Text(
+                        existing == null ? 'Add Reminder' : 'Save Changes',
+                      ),
                     ),
                   ),
                 ],
@@ -190,6 +242,7 @@ class ReminderScreen extends ConsumerWidget {
       },
     );
   }
+
   Widget _buildCoverThumbnail(String? coverImagePath) {
     const size = 44.0;
 
@@ -201,7 +254,11 @@ class ReminderScreen extends ConsumerWidget {
           color: AppColors.primary.withOpacity(0.08),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: const Icon(Icons.menu_book_outlined, color: AppColors.textSecondary, size: 22),
+        child: const Icon(
+          Icons.menu_book_outlined,
+          color: AppColors.textSecondary,
+          size: 22,
+        ),
       );
     }
 
@@ -219,7 +276,11 @@ class ReminderScreen extends ConsumerWidget {
             color: AppColors.primary.withOpacity(0.08),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.menu_book_outlined, color: AppColors.textSecondary, size: 22),
+          child: const Icon(
+            Icons.menu_book_outlined,
+            color: AppColors.textSecondary,
+            size: 22,
+          ),
         ),
       ),
     );

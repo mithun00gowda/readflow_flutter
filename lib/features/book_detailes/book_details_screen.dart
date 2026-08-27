@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readflow/core/widgets/app_toast.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 
 import 'package:readflow/core/theme/app_theme.dart';
@@ -231,6 +232,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                 Navigator.pop(context);
                 final path = await ref.read(imagePickerServiceProvider).pickFromCamera();
                 if (path != null) ref.read(bookProviders.notifier).updateCover(book.bookId, path);
+                AppToast.show('Cover updated');
               },
             ),
             ListTile(
@@ -287,6 +289,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                 controller: pagesController,
                 decoration: const InputDecoration(labelText: 'Total Pages'),
                 keyboardType: TextInputType.number,
+                maxLength: 3,
                 validator: (v) {
                   final n = int.tryParse(v ?? '');
                   if (n == null || n <= 0) return 'Enter a valid number';
@@ -297,7 +300,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
                     if (!formKey.currentState!.validate()) return;
                     ref.read(bookProviders.notifier).editDetails(
                       book.bookId,
@@ -305,6 +308,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                       author: authorController.text.trim(),
                       totalPages: int.parse(pagesController.text.trim()),
                     );
+                    AppToast.show('Book details updated');
                     Navigator.pop(context);
                   },
                   child: const Text('Save Changes'),
@@ -330,6 +334,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
               Navigator.pop(context); // close dialog
               Navigator.pop(context); // close screen, back to Home — unmount before mutating state
               ref.read(bookProviders.notifier).deleteBook(book.bookId);
+              AppToast.show('Book deleted', type: ToastType.error);
             },
             child: const Text('Delete', style: TextStyle(color: AppColors.error)),
           ),

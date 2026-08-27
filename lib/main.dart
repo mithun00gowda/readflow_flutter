@@ -11,6 +11,7 @@ import 'package:readflow/features/root_nav.dart';
 import 'package:readflow/services/notification_services.dart';
 
 final notificationServices = NotificationServices();
+final scafflodMessageKey = GlobalKey<ScaffoldMessengerState>();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +38,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Read Flow',
+      scaffoldMessengerKey: scafflodMessageKey,
       theme: AppTheme.light,
       home: Scaffold(
         body: RootNav(),

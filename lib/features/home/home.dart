@@ -51,6 +51,7 @@ class _HomeState extends ConsumerState<Home> {
   @override
   Widget build(BuildContext context) {
     final books = ref.watch(bookProviders);
+    debugPrint('🏠 Home rebuilt, book 0 page = ${books.isNotEmpty ? books[0].currentPage : "n/a"}');
     final currentStreak = ref.watch(currentStreakProvider);
     final achievements = ref.watch(readingAchievementsProvider);
 
@@ -71,6 +72,7 @@ class _HomeState extends ConsumerState<Home> {
                 itemBuilder: (context, index) {
                   final book = books[index];
                   return TweenAnimationBuilder<double>(
+                    key: ValueKey(book.bookId),
                     tween: Tween(begin: 0, end: 1),
                     duration: Duration(milliseconds: 350 + (index * 60)),
                     curve: Curves.easeOutCubic,

@@ -27,4 +27,5 @@ class ReadingLog extends HiveObject{
   });
 
   int get pagesRead => toPage - fromPage;
+  int get pagesReadPositive => pagesRead > 0 ? pagesRead : 0;
 }

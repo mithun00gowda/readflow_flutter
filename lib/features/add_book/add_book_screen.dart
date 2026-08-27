@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/core/theme/app_theme.dart';
+import 'package:readflow/core/widgets/app_toast.dart';
 import 'package:readflow/data/models/book.dart';
 import 'package:readflow/providers/book_providers.dart';
 import 'package:readflow/providers/services_provider.dart';
@@ -48,7 +49,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     );
 
     ref.read(bookProviders.notifier).addBook(book);
-
+    AppToast.show('Book added to your shelf');
     if (mounted) Navigator.of(context).pop();
   }
 
