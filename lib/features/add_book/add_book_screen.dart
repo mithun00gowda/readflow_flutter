@@ -105,13 +105,14 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               ),
 
               // Sticky bottom action bar — submit always visible, no scrolling needed
+
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                 decoration: BoxDecoration(
                   color: AppColors.background,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, -2),
                     ),
@@ -174,7 +175,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               width: 140,
               height: 190,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _coverPlaceholder(),
+              errorBuilder: (_, _, _) => _coverPlaceholder(),
             )
                 : _coverPlaceholder(),
           ),
@@ -211,18 +212,18 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       width: 140,
       height: 190,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.08),
+        color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.menu_book_outlined, size: 40, color: AppColors.primary.withOpacity(0.6)),
+          Icon(Icons.menu_book_outlined, size: 40, color: AppColors.primary.withValues(alpha: 0.6)),
           const SizedBox(height: 8),
           Text(
             'No cover yet',
-            style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.8)),
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.8)),
           ),
         ],
       ),
@@ -242,7 +243,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

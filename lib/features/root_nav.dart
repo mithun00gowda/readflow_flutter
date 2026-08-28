@@ -4,7 +4,6 @@ import 'package:readflow/features/add_book/add_book_screen.dart';
 import 'package:readflow/features/bookshelf/book_shelf_screen.dart';
 import 'package:readflow/features/home/home.dart';
 import 'package:readflow/features/settings/reminder_screen.dart';
-import 'package:readflow/features/settings/settings_screen.dart';
 import 'package:readflow/features/stats/stats_screen.dart';
 
 class RootNav extends StatefulWidget {

@@ -1,7 +1,7 @@
 // lib/providers/achievements_provider.dart
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/providers/reading_logs_providers.dart';
-import 'package:readflow/providers/repository_providers.dart';
 
 class ReadingAchievements {
   final int totalPagesRead;
@@ -24,7 +24,8 @@ final readingAchievementsProvider = Provider<ReadingAchievements>((ref) {
     0,
     (sum, log) => sum + (log.sessionDurationMinutes ?? 0),
   );
-
+// in readingAchievementsProvider, right before the return
+  debugPrint('🏆 achievements recomputed: pages=$totalPages, minutes=$totalMinutes');
   return ReadingAchievements(
     totalPagesRead: totalPages,
     totalMinutesRead: totalMinutes,

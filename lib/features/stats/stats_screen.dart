@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/features/stats/widget/reading_heatmap_calendar.dart';
 import 'package:readflow/features/stats/widget/streak_header.dart';
 import 'package:readflow/providers/reading_logs_providers.dart';
-import 'package:readflow/providers/repository_providers.dart';
 import 'package:readflow/providers/streak_provider.dart';
 
 class StatsScreen extends ConsumerStatefulWidget {

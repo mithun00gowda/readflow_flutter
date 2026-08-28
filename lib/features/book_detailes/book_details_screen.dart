@@ -1,11 +1,10 @@
+import 'dart:async';
 import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/core/widgets/app_toast.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
-
 import 'package:readflow/core/theme/app_theme.dart';
 import 'package:readflow/data/models/book.dart';
 import 'package:readflow/providers/book_providers.dart';
@@ -15,19 +14,44 @@ import 'package:readflow/providers/services_provider.dart';
 class BookDetailsScreen extends ConsumerStatefulWidget {
   final String bookId;
   const BookDetailsScreen({super.key, required this.bookId});
-
   @override
   ConsumerState<BookDetailsScreen> createState() => _BookDetailsScreenState();
 }
 
 class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
-  double? _sliderValue; // null until first synced from book data
-  late final DateTime _sessionStart;
+  double? _sliderValue;
+  bool _sessionActive = false;
+  int _elapsedSeconds = 0; // persists even after the timer is stopped
+  Timer? _ticker;
+
+  void _toggleSession() {
+    if (_sessionActive) {
+      _ticker?.cancel();
+      setState(() => _sessionActive = false);
+      // _elapsedSeconds is intentionally NOT reset here — keep it until save/discard
+    } else {
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+        setState(() => _elapsedSeconds++);
+      });
+      setState(() => _sessionActive = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+
+  String get _formattedElapsed {
+    final minutes = (_elapsedSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_elapsedSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
 @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _sessionStart = DateTime.now();
   }
   @override
   Widget build(BuildContext context) {
@@ -67,7 +91,11 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
             const SizedBox(height: 24),
             _buildStatusSelector(book),
             const SizedBox(height: 24),
+            _buildSessionTimer(),
+            const SizedBox(height: 24),
             _buildCircularSlider(book),
+            const SizedBox(height: 20),
+            _buildQuickUpdateRow(book),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -78,11 +106,20 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                     : () {
                   final fromPage = book.currentPage;
                   final toPage = _sliderValue!.round();
-                  final elapsedMinutes = DateTime.now().difference(_sessionStart).inMinutes;
+                  final duration = _elapsedSeconds > 0 ? (_elapsedSeconds / 60).ceil() : null;
+
                   ref.read(bookProviders.notifier).updateBook(book.bookId, toPage);
-                  ref
-                      .read(readingLogsProvider.notifier)
-                      .logProgress(book.bookId, fromPage, toPage,sessionDurationMinutes: elapsedMinutes);
+                  ref.read(readingLogsProvider.notifier).logProgress(
+                    book.bookId, fromPage, toPage,
+                    sessionDurationMinutes: duration,
+                  );
+
+                  _ticker?.cancel();
+                  setState(() {
+                    _sessionActive = false;
+                    _elapsedSeconds = 0; // NOW it's safe to reset — the value has been consumed/logged
+                  });
+                  AppToast.show('Progress saved');
                 },
                 child: const Text('Update Progress'),
               ),
@@ -109,7 +146,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                   width: 100,
                   height: 140,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _coverPlaceholder(),
+                  errorBuilder: (_, _, _) => _coverPlaceholder(),
                 )
                     : _coverPlaceholder(),
               ),
@@ -156,10 +193,10 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
       width: 100,
       height: 140,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.08),
+        color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Icon(Icons.menu_book_outlined, size: 32, color: AppColors.primary.withOpacity(0.5)),
+      child: Icon(Icons.menu_book_outlined, size: 32, color: AppColors.primary.withValues(alpha: 0.5)),
     );
   }
 
@@ -199,7 +236,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
           startAngle: 130,
           customColors: CustomSliderColors(
             progressBarColor: AppColors.primary,
-            trackColor: AppColors.primary.withOpacity(0.12),
+            trackColor: AppColors.primary.withValues(alpha: 0.12),
             dotColor: AppColors.primary,
           ),
           customWidths: CustomSliderWidths(progressBarWidth: 14, trackWidth: 14, handlerSize: 10),
@@ -339,6 +376,186 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
             child: const Text('Delete', style: TextStyle(color: AppColors.error)),
           ),
         ],
+      ),
+    );
+  }
+  Widget _buildSessionTimer() {
+    return GestureDetector(
+      onTap: _toggleSession,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: _sessionActive ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_sessionActive)
+              _PulsingDot()
+            else
+              Icon(Icons.play_circle_outline, size: 18, color: AppColors.primary),
+            const SizedBox(width: 10),
+            Text(
+              _sessionActive ? 'Reading · $_formattedElapsed' : 'Start Reading Session',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: _sessionActive ? Colors.white : AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildQuickUpdateRow(Book book) {
+    final currentValue = _sliderValue!.round();
+
+    return Column(
+      children: [
+        // Stepper: -10 / -1 / [type page] / +1 / +10
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _stepButton(icon: Icons.remove, onTap: () => _adjustPage(-10, book), label: '-10'),
+            _stepButton(icon: Icons.remove, onTap: () => _adjustPage(-1, book), label: '-1'),
+            _buildPageInput(book),
+            _stepButton(icon: Icons.add, onTap: () => _adjustPage(1, book), label: '+1'),
+            _stepButton(icon: Icons.add, onTap: () => _adjustPage(10, book), label: '+10'),
+          ],
+        ),
+        const SizedBox(height: 14),
+        // Quick jump chips
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _jumpChip('+25 pages', () => _adjustPage(25, book)),
+            const SizedBox(width: 8),
+            _jumpChip('Mark as finished', () => setState(() => _sliderValue = book.totalPage.toDouble())),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _adjustPage(int delta, Book book) {
+    final newValue = (_sliderValue!.round() + delta).clamp(0, book.totalPage);
+    setState(() => _sliderValue = newValue.toDouble());
+  }
+
+  Widget _stepButton({required IconData icon, required VoidCallback onTap, required String label}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+        ),
+        child: Icon(icon, size: 16, color: AppColors.primary),
+      ),
+    );
+  }
+
+  Widget _buildPageInput(Book book) {
+    return GestureDetector(
+      onTap: () => _showPageInputDialog(book),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${_sliderValue!.round()}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.edit, size: 12, color: AppColors.textSecondary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _jumpChip(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+        ),
+        child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.primary)),
+      ),
+    );
+  }
+
+  void _showPageInputDialog(Book book) {
+    final controller = TextEditingController(text: _sliderValue!.round().toString());
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Jump to page'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: InputDecoration(hintText: 'Page number (0–${book.totalPage})'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              final page = int.tryParse(controller.text);
+              if (page != null) {
+                setState(() => _sliderValue = page.clamp(0, book.totalPage).toDouble());
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Go'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PulsingDot extends StatefulWidget {
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: Tween(begin: 0.3, end: 1.0).animate(_controller),
+      child: Container(
+        width: 8, height: 8,
+        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
       ),
     );
   }
