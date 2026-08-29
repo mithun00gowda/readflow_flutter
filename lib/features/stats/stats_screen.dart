@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readflow/features/stats/widget/badge_shelf.dart';
 import 'package:readflow/features/stats/widget/reading_heatmap_calendar.dart';
 import 'package:readflow/features/stats/widget/streak_header.dart';
 import 'package:readflow/providers/reading_logs_providers.dart';
@@ -36,6 +37,8 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             currentStreak: currentStreak,
             longestStreak: longestStreak,
           ),
+          const SizedBox(height: 20),
+          const BadgeShelf(),
           const SizedBox(height: 20),
           ReadingHeatmapCalendar(
             pagesPerDay: pagesPerDay,

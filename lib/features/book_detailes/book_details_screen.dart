@@ -203,9 +203,9 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
   Widget _buildStatusSelector(Book book) {
     return SegmentedButton<BookStatus>(
       segments: const [
-        ButtonSegment(value: BookStatus.wantToRead, label: Text('Want to Read'), icon: Icon(Icons.bookmark_outline, size: 16)),
-        ButtonSegment(value: BookStatus.reading, label: Text('Reading'), icon: Icon(Icons.menu_book_outlined, size: 16)),
-        ButtonSegment(value: BookStatus.finished, label: Text('Finished'), icon: Icon(Icons.check_circle_outline, size: 16)),
+        ButtonSegment(value: BookStatus.wantToRead, label: Text('Want to Read',style: TextStyle(fontSize: 10),), icon: Icon(Icons.bookmark_outline, size: 16)),
+        ButtonSegment(value: BookStatus.reading, label: Text('Reading',style: TextStyle(fontSize: 10),), icon: Icon(Icons.menu_book_outlined, size: 16)),
+        ButtonSegment(value: BookStatus.finished, label: Text('Finished',style: TextStyle(fontSize: 10),), icon: Icon(Icons.check_circle_outline, size: 16)),
       ],
       selected: {book.status},
       onSelectionChanged: (selected) {
