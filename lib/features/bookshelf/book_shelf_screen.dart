@@ -8,6 +8,8 @@ import 'package:readflow/data/models/book.dart';
 import 'package:readflow/features/book_detailes/book_details_screen.dart';
 import 'package:readflow/providers/book_providers.dart';
 
+import 'widget/quick_update_button.dart';
+
 class BookShelfScreen extends ConsumerStatefulWidget {
   const BookShelfScreen({super.key});
 
@@ -149,7 +151,7 @@ class _ShelfBookCard extends StatelessWidget {
                   Positioned(
                     right: 4,
                     top: 4,
-                    child: _QuickUpdateButton(book: book),
+                    child: QuickUpdateButton(book: book),
                   ),
               ],
             ),
@@ -200,28 +202,3 @@ class _ShelfBookCard extends StatelessWidget {
   }
 }
 
-/// Small "+" affordance on in-progress books for a one-tap page bump
-/// without leaving the shelf — full editing still lives in BookDetailsScreen.
-class _QuickUpdateButton extends ConsumerWidget {
-  final Book book;
-  const _QuickUpdateButton({required this.book});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: () {
-        final nextPage = (book.currentPage + 1).clamp(0, book.totalPage);
-        ref.read(bookProviders.notifier).updateBook(book.bookId, nextPage);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 3)],
-        ),
-        child: const Icon(Icons.add, size: 14, color: Colors.white),
-      ),
-    );
-  }
-}
