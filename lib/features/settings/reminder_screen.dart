@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readflow/core/theme/app_theme.dart';
+import 'package:readflow/features/settings/widgets/day_selector.dart';
 import 'package:readflow/providers/book_providers.dart';
 import 'package:readflow/providers/book_reminder_provider.dart';
 
@@ -21,7 +23,7 @@ class ReminderScreen extends ConsumerWidget {
         title: Text('Reminders'),
         actions: [
           IconButton(
-            onPressed: () => _showReminderSheet(context, ref, notifier),
+            onPressed: () => showReminderSheet(context, ref, notifier),
             icon: Icon(Icons.add, color: AppColors.textSecondary),
           ),
         ],
@@ -41,7 +43,7 @@ class ReminderScreen extends ConsumerWidget {
 
                 return InkWell(
                   onTap: () =>
-                      _showReminderSheet(context, ref, notifier, existing: r),
+                      showReminderSheet(context, ref, notifier, existing: r),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -106,17 +108,18 @@ class ReminderScreen extends ConsumerWidget {
     );
   }
 
-  void _showReminderSheet(
-    BuildContext context,
-    WidgetRef ref,
-    BookReminderNotifier notifier, {
-    BookReminder? existing, // null = add mode, non-null = edit mode
-  }) {
+  void showReminderSheet(
+      BuildContext context,
+      WidgetRef ref,
+      BookReminderNotifier notifier, {
+        BookReminder? existing, // null = add mode, non-null = edit mode
+      }) {
     final labelController = TextEditingController(text: existing?.label ?? '');
     TimeOfDay pickedTime = existing != null
         ? TimeOfDay(hour: existing.hour, minute: existing.minute)
         : TimeOfDay.now();
     String? selectedBookId = existing?.bookID;
+    List<int> selectedDays = existing?.daysOfWeek ?? [1, 2, 3, 4, 5, 6, 7]; // default: every day
 
     final books = ref.read(bookProviders);
 
@@ -142,10 +145,7 @@ class ReminderScreen extends ConsumerWidget {
                 children: [
                   Text(
                     existing == null ? 'New Reminder' : 'Edit Reminder',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 16),
 
@@ -161,7 +161,7 @@ class ReminderScreen extends ConsumerWidget {
                         child: Text('No book — general reminder'),
                       ),
                       ...books.map(
-                        (b) => DropdownMenuItem(
+                            (b) => DropdownMenuItem(
                           value: b.bookId,
                           child: Text(b.title),
                         ),
@@ -170,13 +170,9 @@ class ReminderScreen extends ConsumerWidget {
                     onChanged: (bookId) {
                       setSheetState(() {
                         selectedBookId = bookId;
-                        final book = books
-                            .where((b) => b.bookId == bookId)
-                            .firstOrNull;
-                        if (book != null &&
-                            labelController.text.trim().isEmpty) {
-                          labelController.text =
-                              book.title; // auto-fill, only if label is empty
+                        final book = books.firstWhereOrNull((b) => b.bookId == bookId);
+                        if (book != null && labelController.text.trim().isEmpty) {
+                          labelController.text = book.title; // auto-fill, only if label is empty
                         }
                       });
                     },
@@ -198,17 +194,33 @@ class ReminderScreen extends ConsumerWidget {
                         context: context,
                         initialTime: pickedTime,
                       );
-                      if (result != null)
+                      if (result != null) {
                         setSheetState(() => pickedTime = result);
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
+
+                  const Text(
+                    'Repeat on',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                  const SizedBox(height: 10),
+                  DaySelector(
+                    selectedDays: selectedDays,
+                    onChanged: (days) => setSheetState(() => selectedDays = days),
+                  ),
+                  const SizedBox(height: 20),
 
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
                         if (labelController.text.trim().isEmpty) return;
+                        if (selectedDays.isEmpty) {
+                          AppToast.show('Pick at least one day', type: ToastType.error);
+                          return;
+                        }
 
                         if (existing == null) {
                           notifier.addReminder(
@@ -216,6 +228,7 @@ class ReminderScreen extends ConsumerWidget {
                             hour: pickedTime.hour,
                             minute: pickedTime.minute,
                             bookId: selectedBookId,
+                            selectedDays: selectedDays,
                           );
                         } else {
                           notifier.editReminder(
@@ -224,14 +237,13 @@ class ReminderScreen extends ConsumerWidget {
                             hour: pickedTime.hour,
                             minute: pickedTime.minute,
                             bookId: selectedBookId,
+                            selectedDays: selectedDays,
                           );
                         }
                         AppToast.show('Reminder saved');
                         Navigator.pop(context);
                       },
-                      child: Text(
-                        existing == null ? 'Add Reminder' : 'Save Changes',
-                      ),
+                      child: Text(existing == null ? 'Add Reminder' : 'Save Changes'),
                     ),
                   ),
                 ],

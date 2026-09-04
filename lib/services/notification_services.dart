@@ -10,19 +10,26 @@ class NotificationServices {
   Future<void> init() async {
     // 1. Timezone database + device's real local zone
     tz_data.initializeTimeZones();
-    final TimezoneInfo deviceTimeZone = await FlutterTimezone.getLocalTimezone();
-    final String resolvedTimezone = _resolveTimezoneAlias(deviceTimeZone.identifier);
+    final TimezoneInfo deviceTimeZone =
+    await FlutterTimezone.getLocalTimezone();
+    final String resolvedTimezone = _resolveTimezoneAlias(
+      deviceTimeZone.identifier,
+    );
 
     try {
       tz.setLocalLocation(tz.getLocation(resolvedTimezone));
       debugPrint('📍 Device timezone set to: $resolvedTimezone');
     } catch (e) {
-      debugPrint('⚠️ Unknown timezone "$resolvedTimezone", falling back to UTC: $e');
+      debugPrint(
+        '⚠️ Unknown timezone "$resolvedTimezone", falling back to UTC: $e',
+      );
       tz.setLocalLocation(tz.getLocation('UTC'));
     }
 
     // 2. Platform init settings
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_notification',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -37,8 +44,10 @@ class NotificationServices {
     );
 
     // 3. iOS permission (explicit, in addition to the request flags above)
-    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
+    final iosPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+    >();
     final iosGranted = await iosPlugin?.requestPermissions(
       alert: true,
       badge: true,
@@ -53,20 +62,26 @@ class NotificationServices {
       importance: Importance.high,
     );
     await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+    >()
         ?.createNotificationChannel(channel);
     debugPrint('✅ notification channel created');
 
     // 5. Android runtime notification permission (API 33+)
     final androidGranted = await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+    >()
         ?.requestNotificationsPermission();
     debugPrint('🔓 Android notification permission granted: $androidGranted');
 
     // 6. Android exact alarm permission (API 31+, no-op / null below that)
     try {
       await _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+      >()
           ?.requestExactAlarmsPermission();
     } catch (e) {
       debugPrint('exact alarm perm request skipped: $e');
@@ -81,7 +96,9 @@ class NotificationServices {
     required String body,
   }) async {
     final scheduledTime = _nextInstanceOfTime(hour, minute);
-    debugPrint('🔔 Scheduling for: $scheduledTime (now: ${tz.TZDateTime.now(tz.local)})');
+    debugPrint(
+      '🔔 Scheduling for: $scheduledTime (now: ${tz.TZDateTime.now(tz.local)})',
+    );
 
     try {
       await _plugin.zonedSchedule(
@@ -139,6 +156,7 @@ class NotificationServices {
   }
 
   Future<void> cancel(int id) => _plugin.cancel(id: id);
+
   Future<void> cancelAll() => _plugin.cancelAll();
 
   String _resolveTimezoneAlias(String identifier) {
@@ -152,7 +170,14 @@ class NotificationServices {
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
@@ -213,5 +238,64 @@ class NotificationServices {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
+  }
+
+  // notification_services.dart — add this method
+  Future<void> scheduleWeeklyReminder({
+    required int id,
+    required int weekday, // 1=Mon ... 7=Sun (Dart's DateTime.weekday convention)
+    required int hour,
+    required int minute,
+    required String title,
+    required String body,
+    String? imagePath,
+  }) async {
+    final scheduledTime = _nextInstanceOfWeekday(weekday, hour, minute);
+
+    final androidDetails = imagePath != null
+        ? AndroidNotificationDetails(
+      'book_reminder',
+      'Book Reminders',
+      importance: Importance.high,
+      priority: Priority.high,
+      styleInformation: BigPictureStyleInformation(
+        FilePathAndroidBitmap(imagePath),
+        largeIcon: FilePathAndroidBitmap(imagePath),
+        contentTitle: title,
+        summaryText: body,
+      ),
+    )
+        : const AndroidNotificationDetails(
+      'book_reminder',
+      'Book Reminders',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledTime,
+      notificationDetails: NotificationDetails(
+        android: androidDetails,
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          attachments: imagePath != null ? [DarwinNotificationAttachment(imagePath)] : null,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime, // repeats weekly on this weekday
+    );
+  }
+
+  tz.TZDateTime _nextInstanceOfWeekday(int weekday, int hour, int minute) {
+    var scheduled = _nextInstanceOfTime(hour, minute); // reuse existing time-of-day logic
+    while (scheduled.weekday != weekday) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    return scheduled;
   }
 }

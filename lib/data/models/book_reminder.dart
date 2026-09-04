@@ -47,6 +47,7 @@ class BookReminder extends HiveObject {
       daysOfWeek: daysOfWeek ?? this.daysOfWeek,
     );
   }
-
+// book_reminder.dart — add alongside the existing notificationId getter
+  int notificationIdForDay(int weekday) => '${id}_day$weekday'.hashCode & 0x7FFFFFFF;
   int get notificationId => id.hashCode & 0x7FFFFFFF;
 }
